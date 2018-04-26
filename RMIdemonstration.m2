@@ -1,5 +1,5 @@
 restart
-needsPackage("Graphics"); needsPackage("TorAlgebra", FileName => "~/Desktop/TorAlgebra.m2");
+needsPackage("Graphics"); needsPackage("TorAlgebra")--, FileName => "~/Desktop/TorAlgebra.m2");
 needsPackage("RandomMonomialIdeals", FileName => "~/Desktop/Workshop-2018-Madison/RandomMonomialIdeals/RandomMonomialIdeals.m2")
 
 -- parameters for Erdos-Renyi model
@@ -10,11 +10,12 @@ N = 10; -- number of samples
 
 -- generating Erdos-Renyi random monomial ideals
 IDEALS = randomMonomialIdeals(n, D, p, N) 
-netList apply(IDEALS, entries@@mingens) -- better readability
+netList IDEALS
+
 
 -- specifying the ring to work in
-S = ZZ/7[a, b, c, d];
-IDEALS = randomMonomialIdeals(S, D, p, N); netList apply(IDEALS, entries@@mingens)
+S = ZZ/7[a, b, c, d]
+IDEALS = randomMonomialIdeals(S, D, p, N); netList IDEALS
 
 -- compute statistics about the minimal generators
 mingenStats(IDEALS)
@@ -25,6 +26,9 @@ mingenStats(IDEALS)
 
 -- using the show tally option
 mingenStats(IDEALS, ShowTally => true)
+
+-- compare to expected number of (non-minimal) generators
+p*binomial(n+D,D)
 
 -- varying the parameter p
 -- expected number of generators chosen vs. observed number of minimal generators vs. degree complexity
@@ -42,23 +46,24 @@ netList (
 -- plotting histograms
 M_TALLY = (mingenStats(IDEALS, ShowTally => true))_2; -- the tallies we want to plot
 DC_TALLY = (mingenStats(IDEALS, ShowTally => true))_5;
-M_PLOT = plotTally(M_TALLY, 40.0, 200.0, XAxisLabel => "# mingens"); -- using "Graphics" package
-DC_PLOT = plotTally(DC_TALLY, 40.0, 200.0, XAxisLabel => "degree complexity");
+M_PLOT = plotTally(M_TALLY, 40.0, 400.0, XAxisLabel => "# mingens"); -- using "Graphics" package
+DC_PLOT = plotTally(DC_TALLY, 40.0, 400.0, XAxisLabel => "degree complexity");
 svgPicture(M_PLOT, "mingens-histogram.svg"); -- saves histogram to .svg file
 svgPicture(DC_PLOT, "degree-complexity-histogram.svg");
 
 
-
--- : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
--- : : : : : : : : PROJECTIVE  DIMENSION : : : : : : : : : : : : 
--- : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+--- --- --- --- --------------------------- --- --- --- ---
+--- --- --- --- -  PROJECTIVE  DIMENSION  - --- --- --- ---
+--- --- --- --- --------------------------- --- --- --- ---
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
 -- Minimal free resolutions
 I = monomialIdeal(a^5*b^2*c^3, a*c^4*d, a^5*b^2*c*d^2, b*c^2*d^5) 
 F_1 = gens I
 F_2 = syz(gens I)
-F_3 = syz(SYZ_1)
-F_4 = syz(SYZ_2)
+F_3 = syz(F_2)
+F_4 = syz(F_3)
 res I
 peek res I
 
