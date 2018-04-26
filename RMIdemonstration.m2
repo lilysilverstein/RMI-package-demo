@@ -1,6 +1,6 @@
 restart
+needsPackage("Graphics"); needsPackage("TorAlgebra", FileName => "~/Desktop/TorAlgebra.m2");
 needsPackage("RandomMonomialIdeals", FileName => "~/Desktop/Workshop-2018-Madison/RandomMonomialIdeals/RandomMonomialIdeals.m2")
-needsPackage("Graphics")
 
 -- parameters for Erdos-Renyi model
 n = 4; -- number of variables
@@ -19,26 +19,61 @@ IDEALS = randomMonomialIdeals(S, D, p, N); netList apply(IDEALS, entries@@mingen
 -- compute statistics about the minimal generators
 mingenStats(IDEALS)
 
+-- try a larger sample size
+IDEALS = randomMonomialIdeals(S, D, p, 1000); 
+mingenStats(IDEALS)
+
 -- using the show tally option
 mingenStats(IDEALS, ShowTally => true)
 
--- expected number of generators chosen vs. observed number of minimal generators
+-- varying the parameter p
+-- expected number of generators chosen vs. observed number of minimal generators vs. degree complexity
 netList (
-    {{"p","exp. # gens chosen","observed # mingens"}} |
+    {{"p", "E[#gens chosen]", "observed #mingens", "degree complexity"}} |
     for i from -10 to -1 list(
     	p = 2^i//toRR;
-    	IDEALS = randomMonomialIdeals(S,D,p,100);
+    	I = randomMonomialIdeals(S,D,p,100);
     	expectedGens = p*binomial(n+D,D);
-    	observedMingens = (mingenStats(IDEALS))_0;
-    	{p, expectedGens, observedMingens}
+    	(observedMingens, degreeComplexity) = toSequence(mingenStats(I))_{0,2};
+    	{p, expectedGens, observedMingens, degreeComplexity}
 	)
     )
 
--- automatically creating histograms
+-- plotting histograms
 M_TALLY = (mingenStats(IDEALS, ShowTally => true))_2; -- the tallies we want to plot
 DC_TALLY = (mingenStats(IDEALS, ShowTally => true))_5;
-M_PLOT = plotTally(M_TALLY, 40.0, 160.0, XAxisLabel => "# mingens"); -- using "Graphics" package
-DC_PLOT = plotTally(DC_TALLY, 40.0, 160.0, XAxisLabel => "degree complexity");
-svgPicture(M_PLOT, "~/Desktop/mingens-histogram.svg"); -- saves histogram to .svg file
-svgPicture(DC_PLOT, "~/Desktop/degree-complexity-histogram.svg");
+M_PLOT = plotTally(M_TALLY, 40.0, 200.0, XAxisLabel => "# mingens"); -- using "Graphics" package
+DC_PLOT = plotTally(DC_TALLY, 40.0, 200.0, XAxisLabel => "degree complexity");
+svgPicture(M_PLOT, "mingens-histogram.svg"); -- saves histogram to .svg file
+svgPicture(DC_PLOT, "degree-complexity-histogram.svg");
+
+
+
+-- : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
+-- : : : : : : : : PROJECTIVE  DIMENSION : : : : : : : : : : : : 
+-- : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
+
+-- Minimal free resolutions
+I = monomialIdeal(a^5*b^2*c^3, a*c^4*d, a^5*b^2*c*d^2, b*c^2*d^5) 
+F_1 = gens I
+F_2 = syz(gens I)
+F_3 = syz(SYZ_1)
+F_4 = syz(SYZ_2)
+res I
+peek res I
+
+-- Projective dimension = length of a minimal free resolution
+res I
+pdim (S^1/I)
+
+-- what happens in the random case?
+pdimStats(randomMonomialIdeals(3, 10, 0.25, 100), ShowTally => true)
+
+netList{
+for i from 0 to 10 list(
+    p = i*0.1;
+    I = randomMonomialIdeals(3,10,p,100);
+    (pdimStats(I, ShowTally => true))_(-1)
+    )
+}
 
